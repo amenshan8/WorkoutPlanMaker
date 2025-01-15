@@ -1,0 +1,2195 @@
+<html><head><base href="http://localhost:3000">
+<title>Science-Based Workout Plan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+:root {
+  --primary: #60a5fa;
+  --secondary: #94a3b8;
+  --background: #0f172a;
+  --text: #e2e8f0;
+  --card-bg: #1e293b;
+  --accent: #3b82f6;
+  --hover: #1e40af;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--background);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.cover {
+  min-height: 45vh; /* Reduced from 60vh */
+  padding: 1.5rem 1rem; /* Reduced padding */
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: var(--text);
+  opacity: 0; /* Start hidden */
+  animation: fadeInSlideUp 1.2s ease-out forwards;
+  text-align: center; /* Center content */
+}
+
+.cover h1 {
+  font-size: 2.2rem; /* Reduced from 2.8rem */
+  margin-bottom: 0.75rem;
+  opacity: 0;
+  animation: fadeInSlideUp 0.8s ease-out 0.6s forwards;
+}
+
+.cover h2 {
+  font-size: 1.2rem; /* Reduced from 1.4rem */
+  opacity: 0;
+  animation: fadeInSlideUp 0.8s ease-out 0.9s forwards;
+}
+
+.day-jumper {
+  background: var(--card-bg);
+  padding: 1rem;
+  margin: -2rem auto 2rem;
+  border-radius: 1rem;
+  max-width: 1200px;
+  box-shadow: 0 4px 20px -1px rgba(0,0,0,0.3);
+  opacity: 0;
+  animation: fadeInSlideUp 0.8s ease-out 1.2s forwards;
+}
+
+.jumper-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.jump-btn {
+  background: var(--background);
+  color: var(--text);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid var(--primary);
+  min-width: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Remove the hover and active states since it's no longer clickable */
+.jump-btn:hover {
+  transform: none;
+  background: var(--background);
+  box-shadow: none;
+  border-color: var(--primary);
+}
+
+.jump-btn:active {
+  transform: none;
+}
+
+.jump-btn .editable-content {
+  display: block;
+  min-width: 40px;
+  transition: all 0.2s ease;
+}
+
+.jump-btn .editable-content:focus {
+  background: rgba(96, 165, 250, 0.1);
+  outline: none;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+
+/* Add this to ensure the jump buttons maintain their style when content is edited */
+.jump-btn span[contenteditable="true"]:empty::before {
+  content: attr(data-translate);
+  color: var(--secondary);
+  opacity: 0.7;
+}
+
+.jump-btn span {
+  font-size: 0.8em;
+  color: var(--primary);
+  opacity: 0.9;
+}
+
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Change to single column */
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1000px; /* Reduce max width for better readability */
+  margin: 0 auto;
+}
+
+.workout-card {
+  background: var(--card-bg);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px -1px rgba(0,0,0,0.5);
+  transition: transform 0.2s ease-in-out;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(96, 165, 250, 0.1);
+  position: relative; /* To position the before pseudo-element */
+}
+
+.workout-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px -1px rgba(0,0,0,0.7);
+}
+
+.workout-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary);
+  border-top-left-radius: 1.5rem;
+  border-bottom-left-radius: 1.5rem;
+}
+
+.workout-card h3 {
+  color: var(--primary);
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--hover);
+  padding-bottom: 0.75rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.workout-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1rem 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: rgba(30, 41, 59, 0.5);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  font-size: 0.9rem; /* Slightly reduce overall font size */
+}
+
+.workout-table th,
+.workout-table td {
+  padding: 0.75rem; /* Reduce padding */
+}
+
+/* Set specific column widths */
+.workout-table th:nth-child(1),
+.workout-table td:nth-child(1) {
+  width: 35%; /* Exercise name gets more space */
+}
+
+.workout-table th:nth-child(2),
+.workout-table td:nth-child(2),
+.workout-table th:nth-child(3),
+.workout-table td:nth-child(3),
+.workout-table th:nth-child(4),
+.workout-table td:nth-child(4) {
+  width: 12%; /* Sets, Reps, and Rest get less space */
+  text-align: center;
+}
+
+.workout-table th:nth-child(5),
+.workout-table td:nth-child(5) {
+  width: 29%; /* Notes get moderate space */
+}
+
+.editable {
+  background: var(--card-bg);
+  font-weight: 600;
+  color: #60a5fa; /* Primary color for better visibility */
+  border: none;
+  transition: all 0.2s ease;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  width: 90%; /* Make inputs smaller */
+}
+
+.editable:hover {
+  background: #2d3748;
+  color: #93c5fd;
+  transform: translateX(5px);
+}
+
+.editable:focus {
+  background: #374151;
+  color: #93c5fd;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  transform: translateX(5px);
+}
+
+.workout-table td:first-child .editable {
+  font-size: 1.1em;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: linear-gradient(145deg, var(--card-bg), #2d3748);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.workout-table td:first-child .editable:hover {
+  background: linear-gradient(145deg, #2d3748, var(--card-bg));
+  color: #93c5fd;
+  transform: translateX(8px);
+}
+
+.weekly-overview {
+  background: var(--card-bg);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 1200px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+.info-card {
+  background: #1a2234;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  transition: transform 0.2s ease;
+  border: 1px solid rgba(96, 165, 250, 0.1);
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+}
+
+.info-card h3, .info-card h4 {
+  color: var(--primary);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.info-card p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.footer {
+  background: var(--card-bg);
+  text-align: center;
+  margin-top: 4rem;
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--hover);
+}
+
+html {
+  scroll-behavior: smooth; /* Add this to enable smooth scrolling */
+  scroll-padding-top: 2rem; /* Add this to prevent content from being hidden under the language toggle */
+}
+
+.logo {
+  width: 200px;
+  height: 200px;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.3));
+  opacity: 0;
+  animation: fadeInScale 1s ease-out 0.3s forwards;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 15px rgba(96, 165, 250, 0.5));
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.fixed-buttons-container {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  right: 2rem;
+  display: flex;
+  gap: 1rem;
+  z-index: 1000;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.fixed-buttons-container button {
+  background: var(--primary);
+  color: var(--background);
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  white-space: nowrap;
+  min-width: 200px;
+}
+
+.action-buttons {
+  position: fixed;
+  bottom: 8rem; /* Move up to avoid overlap */
+  right: 2rem;
+  display: flex;
+  gap: 1rem;
+  z-index: 1000;
+  flex-direction: column;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .fixed-buttons-container {
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    flex-direction: column;
+  }
+
+  .fixed-buttons-container button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    min-width: 0;
+  }
+
+  .action-buttons {
+    bottom: unset;
+    top: 4rem;
+    right: 1rem;
+  }
+
+  .action-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--hover);
+  z-index: 1000;
+}
+
+.scroll-progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--primary);
+  width: var(--scroll);
+}
+
+/* Base responsive adjustments */
+@media (max-width: 768px) {
+  .cover {
+    min-height: 35vh; /* Adjusted for mobile */
+    padding: 1rem;
+  }
+
+  .cover h1 {
+    font-size: 1.6rem; /* Adjusted for mobile */
+  }
+
+  .cover h2 {
+    font-size: 1rem; /* Adjusted for mobile */
+  }
+
+  .logo {
+    width: 120px; /* Adjusted for mobile */
+    height: 120px; /* Adjusted for mobile */
+  }
+
+  /* Hide quick-nav dots on mobile */
+  .quick-nav {
+    display: none;
+  }
+
+  /* Adjust day jumper */
+  .day-jumper {
+    margin: -1rem 1rem 1rem;
+    padding: 0.5rem;
+  }
+
+  .jump-btn {
+    min-width: 70px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  /* Workout cards */
+  .schedule-grid {
+    padding: 1rem;
+  }
+
+  .workout-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .workout-card h3 {
+    font-size: 1.4rem;
+  }
+
+  /* Table adjustments */
+  .workout-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
+
+  .workout-table th,
+  .workout-table td {
+    padding: 0.5rem;
+  }
+
+  /* Make inputs more touch-friendly */
+  .editable {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  /* Weekly overview adjustments */
+  .weekly-overview {
+    padding: 1.5rem;
+    margin: 1.5rem 1rem;
+  }
+
+  .info-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Footer adjustments */
+  .footer {
+    padding: 2rem 1rem;
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .jumper-container {
+    gap: 0.5rem;
+  }
+
+  .jump-btn {
+    min-width: 60px;
+    font-size: 0.8rem;
+  }
+
+  .jump-btn span {
+    font-size: 0.7em;
+  }
+
+  .workout-card h3 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    width: 120px;
+    height: 120px;
+    margin: 1rem auto;
+  }
+
+  .cover h1 {
+    font-size: 1.4rem;
+  }
+
+  .cover h2 {
+    font-size: 0.9rem;
+  }
+
+  .workout-table {
+    font-size: 0.8rem;
+  }
+
+  .workout-table th,
+  .workout-table td {
+    padding: 0.4rem;
+  }
+
+  .exercise-link {
+    font-size: 1.2em;
+    padding: 0.3rem;
+  }
+
+  .action-buttons {
+    bottom: 0.5rem;
+    right: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .action-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .workout-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.language-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1001;
+  background: var(--card-bg);
+  padding: 0.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--primary);
+}
+
+.language-toggle select {
+  background: var(--background);
+  color: var(--text);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.language-toggle .earth-emoji {
+  font-size: 1.2rem;
+  animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .language-toggle {
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem;
+  }
+  
+  .language-toggle select {
+    font-size: 0.9rem;
+    padding: 0.25rem;
+  }
+}
+
+.exercise-link {
+  margin-left: 8px;
+  color: var(--primary);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 1.1em;
+}
+
+.exercise-link:hover {
+  color: var(--accent);
+}
+
+.video-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.video-modal-content {
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 800px;
+}
+
+.video-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.video-url-input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 1rem;
+  background: var(--background);
+  color: var(--text);
+  border: 1px solid var(--primary);
+  border-radius: 0.25rem;
+}
+
+/* Additional CSS for video links */
+.exercise-video-link {
+  margin-left: 8px;
+  color: var(--primary);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 1.1em;
+}
+.exercise-video-link:hover {
+  color: var(--accent);
+}
+
+.delete-card-btn:hover {
+  background: #dc2626 !important;
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .delete-card-btn {
+    padding: 0.25rem 0.75rem !important;
+    font-size: 0.9rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="scroll-progress"></div>
+
+<div class="language-toggle">
+  <span class="earth-emoji">&#x1f30d;</span>
+  <select id="languageSelect">
+    <option value="en">English</option>
+    <option value="ar">&#x627;&#x644;&#x639;&#x631;&#x628;&#x64a;&#x629;</option>
+    <option value="nl">Nederlands</option>
+  </select>
+</div>
+
+<div class="cover">
+  <svg class="logo" style="width: 200px; height: 200px;" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+    <!-- Dumbbell -->
+    <g transform="translate(100, 150)" fill="#60a5fa">
+      <rect x="0" y="40" width="200" height="20" rx="5"/>
+      <!-- Left weight -->
+      <rect x="-30" y="20" width="40" height="60" rx="5"/>
+      <rect x="-60" y="30" width="40" height="40" rx="5"/>
+      <!-- Right weight -->
+      <rect x="190" y="20" width="40" height="60" rx="5"/>
+      <rect x="220" y="30" width="40" height="40" rx="5"/>
+    </g>
+    
+    <!-- Text -->
+    <text x="200" y="280" text-anchor="middle" fill="#60a5fa" style="font-size: 24px; font-weight: bold;">
+      DON&apos;T BE FAT FUCK
+    </text>
+    <text x="200" y="320" text-anchor="middle" fill="#60a5fa" style="font-size: 40px; font-weight: bold;">
+      BE FIT FUCK
+    </text>
+  </svg>
+
+  <h1 class="editable-content" data-translate="title">Amin Shan Science-Based Workout Plan</h1>
+  <h2 class="editable-content" data-translate="subtitle" contenteditable="true">A hypertrophy and strength-focused program inspired by Jeff Nippard&apos;s evidence-based methods</h2>
+</div>
+
+<div class="day-jumper">
+  <div class="jumper-container">
+    <div class="jump-btn">
+      <span class="editable-content" data-translate="jumpDay1" contenteditable="true">Day 1</span>
+      <span class="editable-content" data-translate="jumpPush1" contenteditable="true">Push</span>
+    </div>
+    <div class="jump-btn">
+      <span class="editable-content" data-translate="jumpDay2" contenteditable="true">Day 2</span>
+      <span class="editable-content" data-translate="jumpPull1" contenteditable="true">Pull</span>
+    </div>
+    <div class="jump-btn">
+      <span class="editable-content" data-translate="jumpDay3" contenteditable="true">Day 3</span>
+      <span class="editable-content" data-translate="jumpLegs1" contenteditable="true">Legs</span>
+    </div>
+    <div class="jump-btn">
+      <span class="editable-content" data-translate="jumpDay4" contenteditable="true">Day 4</span>
+      <span class="editable-content" data-translate="jumpRest" contenteditable="true">Rest</span>
+    </div>
+    <div class="jump-btn">
+      <span class="editable-content" data-translate="jumpDay5" contenteditable="true">Day 5</span>
+      <span class="editable-content" data-translate="jumpPush2" contenteditable="true">Push</span>
+    </div>
+    <div class="jump-btn">
+      <span class="editable-content" data-translate="jumpDay6" contenteditable="true">Day 6</span>
+      <span class="editable-content" data-translate="jumpPull2" contenteditable="true">Pull</span>
+    </div>
+    <div class="jump-btn">
+      <span class="editable-content" data-translate="jumpDay7" contenteditable="true">Day 7</span>
+      <span class="editable-content" data-translate="jumpLegs2" contenteditable="true">Legs</span>
+    </div>
+  </div>
+</div>
+
+<div class="weekly-overview">
+  <h2 class="editable-content" data-translate="weeklyOverview" contenteditable="true">Weekly Overview</h2>
+  <div class="overview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+    <div class="info-card">
+      <h3 data-translate="frequency">Frequency</h3>
+      <p class="editable-content" contenteditable="true">5&#x2013;6 days per week</p>
+    </div>
+    <div class="info-card">
+      <h3 data-translate="split">Split</h3>
+      <p class="editable-content" contenteditable="true">Push/Pull/Legs (PPL) with variations for volume and intensity</p>
+    </div>
+    <div class="info-card">
+      <h3 data-translate="restDays">Rest Days</h3>
+      <p class="editable-content" contenteditable="true">1&#x2013;2 (adjust based on recovery)</p>
+    </div>
+  </div>
+</div>
+
+<div class="schedule-grid">
+  <div class="workout-card" id="workout-0">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="editable-content" data-translate="day1" contenteditable="true">Day 1 - Push (Chest, Shoulders, Triceps)</h3>
+      <button class="delete-card-btn" onclick="deleteWorkoutCard(this)" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">Delete Card</button>
+    </div>
+    <table class="workout-table">
+      <thead>
+        <tr>
+          <th class="editable-content" contenteditable="true">Exercise</th>
+          <th class="editable-content" contenteditable="true">Sets</th>
+          <th class="editable-content" contenteditable="true">Reps</th>
+          <th class="editable-content" contenteditable="true">Rest</th>
+          <th class="editable-content" contenteditable="true">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Flat Barbell Bench Press" data-original="Flat Barbell Bench Press" value="Flat Barbell Bench Press">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="4"></td>
+          <td><input type="text" class="editable" value="6-8"></td>
+          <td><input type="text" class="editable" value="2-3 min"></td>
+          <td><input type="text" class="editable" value="Heavy, focus on form"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Incline Dumbbell Press" data-original="Incline Dumbbell Press" value="Incline Dumbbell Press">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="8-10"></td>
+          <td><input type="text" class="editable" value="2 min"></td>
+          <td><input type="text" class="editable" value="Control descent"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Seated Overhead Dumbbell Press" data-original="Seated Overhead Dumbbell Press" value="Seated Overhead Dumbbell Press">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="8-12"></td>
+          <td><input type="text" class="editable" value="2 min"></td>
+          <td><input type="text" class="editable" value="Full range of motion"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Lateral Raises" data-original="Lateral Raises" value="Lateral Raises">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="12-15"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Use light weight for strict form"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Cable Tricep Pushdowns" data-original="Cable Tricep Pushdowns" value="Cable Tricep Pushdowns">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10-12"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Keep elbows tight"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Overhead Tricep Extensions" data-original="Overhead Tricep Extensions" value="Overhead Tricep Extensions">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="12-15"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Cable or Dumbbell variation"></td>
+        </tr>
+      </tbody>
+      <tr class="add-exercise-row">
+        <td colspan="5" style="text-align: center; padding: 1rem;">
+          <button onclick="addExerciseRow(this)" style="background: var(--primary); 
+                         color: var(--background); 
+                         padding: 0.5rem 1rem; 
+                         border-radius: 0.5rem; 
+                         border: none; 
+                         cursor: pointer; 
+                         font-weight: bold;">
+            + Add Exercise
+          </button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="workout-card" id="workout-1">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="editable-content" data-translate="day2" contenteditable="true">Day 2 - Pull (Back, Rear Delts, Biceps)</h3>
+      <button class="delete-card-btn" onclick="deleteWorkoutCard(this)" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">Delete Card</button>
+    </div>
+    <table class="workout-table">
+      <thead>
+        <tr>
+          <th class="editable-content" contenteditable="true">Exercise</th>
+          <th class="editable-content" contenteditable="true">Sets</th>
+          <th class="editable-content" contenteditable="true">Reps</th>
+          <th class="editable-content" contenteditable="true">Rest</th>
+          <th class="editable-content" contenteditable="true">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Pull-Ups/Lat Pulldown" data-original="Pull-Ups/Lat Pulldown" value="Pull-Ups/Lat Pulldown">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="4"></td>
+          <td><input type="text" class="editable" value="6-8"></td>
+          <td><input type="text" class="editable" value="2 min"></td>
+          <td><input type="text" class="editable" value="Weighted if possible"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Barbell Row" data-original="Barbell Row" value="Barbell Row">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="4"></td>
+          <td><input type="text" class="editable" value="6-8"></td>
+          <td><input type="text" class="editable" value="2 min"></td>
+          <td><input type="text" class="editable" value="Pendlay row variation"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Chest-Supported Dumbbell Row" data-original="Chest-Supported Dumbbell Row" value="Chest-Supported Dumbbell Row">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10-12"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Focus on scapular retraction"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Face Pulls" data-original="Face Pulls" value="Face Pulls">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="12-15"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Rear delt focus"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Barbell/Dumbbell Bicep Curls" data-original="Barbell/Dumbbell Bicep Curls" value="Barbell/Dumbbell Bicep Curls">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10-12"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Strict form"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Hammer Curls" data-original="Hammer Curls" value="Hammer Curls">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="12-15"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Control the negative"></td>
+        </tr>
+      </tbody>
+      <tr class="add-exercise-row">
+        <td colspan="5" style="text-align: center; padding: 1rem;">
+          <button onclick="addExerciseRow(this)" style="background: var(--primary); 
+                         color: var(--background); 
+                         padding: 0.5rem 1rem; 
+                         border-radius: 0.5rem; 
+                         border: none; 
+                         cursor: pointer; 
+                         font-weight: bold;">
+            + Add Exercise
+          </button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="workout-card" id="workout-2">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="editable-content" data-translate="day3" contenteditable="true">Day 3 - Legs (Quads, Hamstrings, Glutes)</h3>
+      <button class="delete-card-btn" onclick="deleteWorkoutCard(this)" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">Delete Card</button>
+    </div>
+    <table class="workout-table">
+      <thead>
+        <tr>
+          <th class="editable-content" contenteditable="true">Exercise</th>
+          <th class="editable-content" contenteditable="true">Sets</th>
+          <th class="editable-content" contenteditable="true">Reps</th>
+          <th class="editable-content" contenteditable="true">Rest</th>
+          <th class="editable-content" contenteditable="true">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Back Squat" data-original="Back Squat" value="Back Squat">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="4"></td>
+          <td><input type="text" class="editable" value="6-8"></td>
+          <td><input type="text" class="editable" value="3 min"></td>
+          <td><input type="text" class="editable" value="Focus on depth"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Romanian Deadlift" data-original="Romanian Deadlift" value="Romanian Deadlift">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="8-10"></td>
+          <td><input type="text" class="editable" value="2 min"></td>
+          <td><input type="text" class="editable" value="Feel the hamstrings"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Walking Lunges" data-original="Walking Lunges" value="Walking Lunges">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10/leg"></td>
+          <td><input type="text" class="editable" value="2 min"></td>
+          <td><input type="text" class="editable" value="Weight optional"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Leg Press" data-original="Leg Press" value="Leg Press">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10-12"></td>
+          <td><input type="text" class="editable" value="2 min"></td>
+          <td><input type="text" class="editable" value="Control eccentric"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Hamstring Curls" data-original="Hamstring Curls" value="Hamstring Curls">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="12-15"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Full range of motion"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Calf Raises" data-original="Calf Raises" value="Calf Raises">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="4"></td>
+          <td><input type="text" class="editable" value="15-20"></td>
+          <td><input type="text" class="editable" value="60 sec"></td>
+          <td><input type="text" class="editable" value="Pause at top"></td>
+        </tr>
+      </tbody>
+      <tr class="add-exercise-row">
+        <td colspan="5" style="text-align: center; padding: 1rem;">
+          <button onclick="addExerciseRow(this)" style="background: var(--primary); 
+                         color: var(--background); 
+                         padding: 0.5rem 1rem; 
+                         border-radius: 0.5rem; 
+                         border: none; 
+                         cursor: pointer; 
+                         font-weight: bold;">
+            + Add Exercise
+          </button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="workout-card" id="workout-3">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="editable-content" data-translate="day4" contenteditable="true">Day 4 - Rest/Active Recovery</h3>
+      <button class="delete-card-btn" onclick="deleteWorkoutCard(this)" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">Delete Card</button>
+    </div>
+    <div class="info-card" style="margin-top: 1rem">
+      <h4>Suggested Activities:</h4>
+      <ul>
+        <li>Light stretching</li>
+        <li>Yoga</li>
+        <li>Mobility work</li>
+        <li>Light cardio (walking, swimming)</li>
+      </ul>
+      <p><em>Focus on recovery and flexibility</em></p>
+    </div>
+  </div>
+
+  <div class="workout-card" id="workout-4">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="editable-content" data-translate="day5" contenteditable="true">Day 5 - Push (Higher Volume)</h3>
+      <button class="delete-card-btn" onclick="deleteWorkoutCard(this)" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">Delete Card</button>
+    </div>
+    <table class="workout-table">
+      <thead>
+        <tr>
+          <th class="editable-content" contenteditable="true">Exercise</th>
+          <th class="editable-content" contenteditable="true">Sets</th>
+          <th class="editable-content" contenteditable="true">Reps</th>
+          <th class="editable-content" contenteditable="true">Rest</th>
+          <th class="editable-content" contenteditable="true">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Incline Barbell Bench" data-original="Incline Barbell Bench" value="Incline Barbell Bench">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="4"></td>
+          <td><input type="text" class="editable" value="8-10"></td>
+          <td><input type="text" class="editable" value="2 min"></td>
+          <td><input type="text" class="editable" value="Upper chest focus"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Flat Dumbbell Press" data-original="Flat Dumbbell Press" value="Flat Dumbbell Press">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10-12"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Control tempo"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Arnold Press" data-original="Arnold Press" value="Arnold Press">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="8-10"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Full rotation"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Cable Lateral Raises" data-original="Cable Lateral Raises" value="Cable Lateral Raises">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="12-15"></td>
+          <td><input type="text" class="editable" value="60 sec"></td>
+          <td><input type="text" class="editable" value="Constant tension"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Skull Crushers" data-original="Skull Crushers" value="Skull Crushers">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10-12"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Keep elbows still"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Dips" data-original="Dips" value="Dips">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10-12"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Add weight if possible"></td>
+        </tr>
+      </tbody>
+      <tr class="add-exercise-row">
+        <td colspan="5" style="text-align: center; padding: 1rem;">
+          <button onclick="addExerciseRow(this)" style="background: var(--primary); 
+                         color: var(--background); 
+                         padding: 0.5rem 1rem; 
+                         border-radius: 0.5rem; 
+                         border: none; 
+                         cursor: pointer; 
+                         font-weight: bold;">
+            + Add Exercise
+          </button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="workout-card" id="workout-5">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="editable-content" data-translate="day6" contenteditable="true">Day 6 - Pull (Trap/Arm Focus)</h3>
+      <button class="delete-card-btn" onclick="deleteWorkoutCard(this)" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">Delete Card</button>
+    </div>
+    <table class="workout-table">
+      <thead>
+        <tr>
+          <th class="editable-content" contenteditable="true">Exercise</th>
+          <th class="editable-content" contenteditable="true">Sets</th>
+          <th class="editable-content" contenteditable="true">Reps</th>
+          <th class="editable-content" contenteditable="true">Rest</th>
+          <th class="editable-content" contenteditable="true">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Rack Pulls" data-original="Rack Pulls" value="Rack Pulls">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="4"></td>
+          <td><input type="text" class="editable" value="6-8"></td>
+          <td><input type="text" class="editable" value="2-3 min"></td>
+          <td><input type="text" class="editable" value="Focus on upper back"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Wide-Grip Pulldown" data-original="Wide-Grip Pulldown" value="Wide-Grip Pulldown">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="8-10"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Full stretch at top"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Single-Arm DB Row" data-original="Single-Arm DB Row" value="Single-Arm DB Row">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10-12"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Feel the stretch"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Cable Rear Delt Fly" data-original="Cable Rear Delt Fly" value="Cable Rear Delt Fly">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="12-15"></td>
+          <td><input type="text" class="editable" value="60 sec"></td>
+          <td><input type="text" class="editable" value="Light weight, strict form"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Preacher Curls" data-original="Preacher Curls" value="Preacher Curls">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10-12"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Full extension"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Incline DB Curls" data-original="Incline DB Curls" value="Incline DB Curls">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="12-15"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Peak contraction"></td>
+        </tr>
+      </tbody>
+      <tr class="add-exercise-row">
+        <td colspan="5" style="text-align: center; padding: 1rem;">
+          <button onclick="addExerciseRow(this)" style="background: var(--primary); 
+                         color: var(--background); 
+                         padding: 0.5rem 1rem; 
+                         border-radius: 0.5rem; 
+                         border: none; 
+                         cursor: pointer; 
+                         font-weight: bold;">
+            + Add Exercise
+          </button>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="workout-card" id="workout-6">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="editable-content" data-translate="day7" contenteditable="true">Day 7 - Legs (Higher Volume)</h3>
+      <button class="delete-card-btn" onclick="deleteWorkoutCard(this)" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">Delete Card</button>
+    </div>
+    <table class="workout-table">
+      <thead>
+        <tr>
+          <th class="editable-content" contenteditable="true">Exercise</th>
+          <th class="editable-content" contenteditable="true">Sets</th>
+          <th class="editable-content" contenteditable="true">Reps</th>
+          <th class="editable-content" contenteditable="true">Rest</th>
+          <th class="editable-content" contenteditable="true">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Front Squat" data-original="Front Squat" value="Front Squat">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="4"></td>
+          <td><input type="text" class="editable" value="8-10"></td>
+          <td><input type="text" class="editable" value="2 min"></td>
+          <td><input type="text" class="editable" value="Keep torso upright"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Bulgarian Split Squat" data-original="Bulgarian Split Squat" value="Bulgarian Split Squat">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10/leg"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Control balance"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Deadlift" data-original="Deadlift" value="Deadlift">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="4"></td>
+          <td><input type="text" class="editable" value="6-8"></td>
+          <td><input type="text" class="editable" value="2-3 min"></td>
+          <td><input type="text" class="editable" value="If recovered"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Hip Thrust" data-original="Hip Thrust" value="Hip Thrust">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="10-12"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Full glute squeeze"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Leg Extensions" data-original="Leg Extensions" value="Leg Extensions">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="12-15"></td>
+          <td><input type="text" class="editable" value="60 sec"></td>
+          <td><input type="text" class="editable" value="Hold peak contraction"></td>
+        </tr>
+        <tr>
+          <td>
+            <input type="text" class="editable" data-translate="Standing Calf Raises" data-original="Standing Calf Raises" value="Standing Calf Raises">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#x1f4f9;</span>
+          </td>
+          <td><input type="text" class="editable" value="4"></td>
+          <td><input type="text" class="editable" value="15-20"></td>
+          <td><input type="text" class="editable" value="60 sec"></td>
+          <td><input type="text" class="editable" value="Full range of motion"></td>
+        </tr>
+      </tbody>
+      <tr class="add-exercise-row">
+        <td colspan="5" style="text-align: center; padding: 1rem;">
+          <button onclick="addExerciseRow(this)" style="background: var(--primary); 
+                         color: var(--background); 
+                         padding: 0.5rem 1rem; 
+                         border-radius: 0.5rem; 
+                         border: none; 
+                         cursor: pointer; 
+                         font-weight: bold;">
+            + Add Exercise
+          </button>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="fixed-buttons-container">
+  <button onclick="createWorkoutCard()">+ Add Workout</button>
+  <button onclick="createRestDayCard()">+ Add Rest Day</button>
+</div>
+
+<div class="action-buttons">
+  <button class="action-button reset" onclick="resetWebsite()">Reset to Original</button>
+  <button class="action-button save" onclick="saveWebsite()">Save &amp; Download</button>
+</div>
+
+<script>const translations = {
+  'en': {
+    title: 'Amin Shan Science-Based Workout Plan',
+    subtitle: 'A hypertrophy and strength-focused program inspired by Jeff Nippard\'s evidence-based methods',
+    weeklyOverview: 'Weekly Overview',
+    frequency: 'Frequency',
+    split: 'Split',
+    restDays: 'Rest Days',
+    terminologyTitle: 'Training Terms Explained',
+    sets: 'Sets',
+    setsExplanation: 'A group of repetitions performed consecutively without rest. For example, "3 sets" means you\'ll perform the exercise three times with rest periods in between.',
+    reps: 'Reps (Repetitions)',
+    repsExplanation: 'The number of times you perform an exercise within a set. For example, "8-12 reps" means you\'ll perform the movement 8 to 12 times before resting.',
+    day1: 'Day 1 - Push (Chest, Shoulders, Triceps)',
+    day2: 'Day 2 - Pull (Back, Rear Delts, Biceps)',
+    day3: 'Day 3 - Legs (Quads, Hamstrings, Glutes)',
+    day4: 'Day 4 - Rest/Active Recovery',
+    day5: 'Day 5 - Push (Higher Volume)',
+    day6: 'Day 6 - Pull (Trap/Arm Focus)',
+    day7: 'Day 7 - Legs (Higher Volume)',
+    jumpDay1: 'Day 1',
+    jumpPush1: 'Push',
+    jumpDay2: 'Day 2',
+    jumpPull1: 'Pull',
+    jumpDay3: 'Day 3',
+    jumpLegs1: 'Legs',
+    jumpDay4: 'Day 4',
+    jumpRest: 'Rest',
+    jumpDay5: 'Day 5',
+    jumpPush2: 'Push',
+    jumpDay6: 'Day 6',
+    jumpPull2: 'Pull',
+    jumpDay7: 'Day 7',
+    jumpLegs2: 'Legs',
+    footer: {
+      quote: '"Science meets sweat – achieve your goals!"',
+      copyright: '© 2024 Amin Shan Science-Based Workout Plan'
+    },
+    exercises: {
+      'Flat Barbell Bench Press': 'Flat Barbell Bench Press',
+      'Incline Dumbbell Press': 'Incline Dumbbell Press',
+      'Seated Overhead Dumbbell Press': 'Seated Overhead Dumbbell Press',
+      'Lateral Raises': 'Lateral Raises',
+      'Cable Tricep Pushdowns': 'Cable Tricep Pushdowns',
+      'Overhead Tricep Extensions': 'Overhead Tricep Extensions',
+      'Pull-Ups/Lat Pulldown': 'Pull-Ups/Lat Pulldown',
+      'Barbell Row': 'Barbell Row',
+      'Chest-Supported Dumbbell Row': 'Chest-Supported Dumbbell Row',
+      'Face Pulls': 'Face Pulls',
+      'Barbell/Dumbbell Bicep Curls': 'Barbell/Dumbbell Bicep Curls',
+      'Hammer Curls': 'Hammer Curls',
+      'Back Squat': 'Back Squat',
+      'Romanian Deadlift': 'Romanian Deadlift',
+      'Walking Lunges': 'Walking Lunges',
+      'Leg Press': 'Leg Press',
+      'Hamstring Curls': 'Hamstring Curls',
+      'Calf Raises': 'Calf Raises',
+      'Incline Barbell Bench': 'Incline Barbell Bench',
+      'Flat Dumbbell Press': 'Flat Dumbbell Press',
+      'Arnold Press': 'Arnold Press',
+      'Cable Lateral Raises': 'Cable Lateral Raises',
+      'Skull Crushers': 'Skull Crushers',
+      'Dips': 'Dips',
+      'Rack Pulls': 'Rack Pulls',
+      'Wide-Grip Pulldown': 'Wide-Grip Pulldown',
+      'Single-Arm DB Row': 'Single-Arm DB Row',
+      'Cable Rear Delt Fly': 'Cable Rear Delt Fly',
+      'Preacher Curls': 'Preacher Curls',
+      'Incline DB Curls': 'Incline DB Curls',
+      'Front Squat': 'Front Squat',
+      'Bulgarian Split Squat': 'Bulgarian Split Squat',
+      'Deadlift': 'Deadlift',
+      'Hip Thrust': 'Hip Thrust',
+      'Leg Extensions': 'Leg Extensions',
+      'Standing Calf Raises': 'Standing Calf Raises'
+    },
+    notes: {
+      'Heavy, focus on form': 'Heavy, focus on form',
+      'Control descent': 'Control descent',
+      'Weighted if possible': 'Weighted if possible',
+      'Pendlay row variation': 'Pendlay row variation',
+      'Focus on scapular retraction': 'Focus on scapular retraction',
+      'Strict form': 'Strict form',
+      'Feel the hamstrings': 'Feel the hamstrings',
+      'Weight optional': 'Weight optional',
+      'Control eccentric': 'Control eccentric',
+      'Full range of motion': 'Full range of motion',
+      'Upper chest focus': 'Upper chest focus',
+      'Control tempo': 'Control tempo',
+      'Full rotation': 'Full rotation',
+      'Constant tension': 'Constant tension',
+      'Keep elbows still': 'Keep elbows still',
+      'Add weight if possible': 'Add weight if possible',
+      'Focus on upper back': 'Focus on upper back',
+      'Full stretch at top': 'Full stretch at top',
+      'Feel the stretch': 'Feel the stretch',
+      'Full glute squeeze': 'Full glute squeeze',
+      'Hold peak contraction': 'Hold peak contraction'
+    }
+  },
+  'ar': {
+    title: 'خطة تدريب أمين شان المستندة إلى العلم',
+    subtitle: 'برنامج يركز على التضخيم والقوة مستوحى من أساليب جيف نيبارد المستندة إلى الأدلة',
+    weeklyOverview: 'نظرة عامة أسبوعية',
+    frequency: 'التكرار',
+    split: 'التقسيم',
+    restDays: 'أيام الراحة',
+    terminologyTitle: 'شرح مصطلحات التدريب',
+    sets: 'المجموعات',
+    setsExplanation: 'مجموعة من التكرارات تؤدى بشكل متتالي بدون راحة. على سبيل المثال، "3 مجموعات" تعني أنك ستؤدي التمرين ثلاث مرات مع فترات راحة بينها.',
+    reps: 'التكرارات',
+    repsExplanation: 'عدد المرات التي تؤدي فيها التمرين في المجموعة الواحدة. على سبيل المثال، "8-12 تكرار" تعني أنك ستؤدي الحركة من 8 إلى 12 مرة قبل الراحة.',
+    day1: 'اليوم 1 - دفع (صدر، أكتاف، ترايسبس)',
+    day2: 'اليوم 2 - سحب (ظهر، خلف الكتف، بايسبس)',
+    day3: 'اليوم 3 - أرجل (فخذ أمامي، فخذ خلفي، أرداف)',
+    day4: 'اليوم 4 - راحة/تعافي نشط',
+    day5: 'اليوم 5 - دفع (حجم أعلى)',
+    day6: 'اليوم 6 - سحب (تركيز على التراب والذراعين)',
+    day7: 'اليوم 7 - أرجل (حجم أعلى)',
+    jumpDay1: 'اليوم 1',
+    jumpPush1: 'دفع',
+    jumpDay2: 'اليوم 2',
+    jumpPull1: 'سحب',
+    jumpDay3: 'اليوم 3',
+    jumpLegs1: 'أرجل',
+    jumpDay4: 'اليوم 4',
+    jumpRest: 'راحة',
+    jumpDay5: 'اليوم 5',
+    jumpPush2: 'دفع',
+    jumpDay6: 'اليوم 6',
+    jumpPull2: 'سحب',
+    jumpDay7: 'اليوم 7',
+    jumpLegs2: 'أرجل',
+    footer: {
+      quote: '"العلم يلتقي بالعرق - حقق أهدافك!"',
+      copyright: '© 2024 خطة تدريب أمين شان المستندة إلى العلم'
+    },
+    exercises: {
+      'Flat Barbell Bench Press': 'بنش بريس بالبار المسطح',
+      'Incline Dumbbell Press': 'بنش بريس مائل بالدمبل',
+      'Seated Overhead Dumbbell Press': 'بنش بريس علوى بالدمبل',
+      'Lateral Raises': 'رفع جانبي',
+      'Cable Tricep Pushdowns': 'دفع كابل ترايسيب',
+      'Overhead Tricep Extensions': 'تمديد ترايسيب علوى',
+      'Pull-Ups/Lat Pulldown': 'سحب للظهر/سحب بالبار',
+      'Barbell Row': 'سحب بار بالبار',
+      'Chest-Supported Dumbbell Row': 'سحب دمبل مدعوم بالصدر',
+      'Face Pulls': 'سحب للوجه',
+      'Barbell/Dumbbell Bicep Curls': 'ثني بايسبس بالبار/بالدمبل',
+      'Hammer Curls': 'ثني بايسبس المطرقة',
+      'Back Squat': 'سكوات خلفي',
+      'Romanian Deadlift': 'رفع ميت رومانى',
+      'Walking Lunges': 'لانجز مشي',
+      'Leg Press': 'ضغط أرجل',
+      'Hamstring Curls': 'ثني أوتار الركبة',
+      'Calf Raises': 'رفع كعب',
+      'Incline Barbell Bench': 'ضغط بار مائل',
+      'Flat Dumbbell Press': 'ضغط دمبل مسطح',
+      'Arnold Press': 'ضغط أرنولد',
+      'Cable Lateral Raises': 'رفع جانبي كابل',
+      'Skull Crushers': 'سحق جمجمة',
+      'Dips': 'تمارين دبس',
+      'Rack Pulls': 'سحب من الرف',
+      'Wide-Grip Pulldown': 'سحب بقبضة واسعة',
+      'Single-Arm DB Row': 'سحب دمبل بيد واحدة',
+      'Cable Rear Delt Fly': 'طيران كتف خلفي بكابل',
+      'Preacher Curls': 'ثني بايسبس بريسير',
+      'Incline DB Curls': 'ثني بايسبس مائل بالدمبل',
+      'Front Squat': 'سكوات أمامى',
+      'Bulgarian Split Squat': 'سكوات مائل بلغاري',
+      'Deadlift': 'رفع ميت',
+      'Hip Thrust': 'دفع الورك',
+      'Leg Extensions': 'تمديد الأرجل',
+      'Standing Calf Raises': 'رفع كعب واقف'
+    },
+    notes: {
+      'Heavy, focus on form': 'ثقيل، ركز على الشكل',
+      'Control descent': 'تحكم في النزول',
+      'Weighted if possible': 'استخدم وزن إن أمكن',
+      'Pendlay row variation': 'نوعية سحب باندلاي',
+      'Focus on scapular retraction': 'ركز على سحب الكتف',
+      'Strict form': 'شكل صارم',
+      'Feel the hamstrings': 'اشعر بأوتار الركبة',
+      'Weight optional': 'الوزن اختياري',
+      'Control eccentric': 'تحكم في النزول',
+      'Full range of motion': 'مدى حركة كامل',
+      'Upper chest focus': 'تركيز على الصدر العلوي',
+      'Control tempo': 'تحكم في السرعة',
+      'Full rotation': 'دوران كامل',
+      'Constant tension': 'ضغط مستمر',
+      'Keep elbows still': 'حافظ على ثبات الكوع',
+      'Add weight if possible': 'أضف وزن إن أمكن',
+      'Focus on upper back': 'ركز على الجزء العلوي من الظهر',
+      'Full stretch at top': 'امتداد كامل في الأعلى',
+      'Feel the stretch': 'اشعر بالامتداد',
+      'Full glute squeeze': 'ضغط كامل للعضلة الألوية',
+      'Hold peak contraction': 'احتفظ بالانقباض القوي'
+    }
+  },
+  'nl': {
+    title: 'Amin Shan Wetenschappelijk Onderbouwd Trainingsplan',
+    subtitle: 'Een op hypertrofie en kracht gericht programma geïnspireerd door Jeff Nippard\'s evidence-based methoden',
+    weeklyOverview: 'Wekelijks Overzicht',
+    frequency: 'Frequentie',
+    split: 'Split',
+    restDays: 'Rustdagen',
+    terminologyTitle: 'Trainingstermen Uitgelegd',
+    sets: 'Sets',
+    setsExplanation: 'Een groep herhalingen die achter elkaar worden uitgevoerd zonder rust. Bijvoorbeeld, "3 sets" betekent dat je de oefening drie keer uitvoert met rustperiodes ertussen.',
+    reps: 'Herhalingen (Reps)',
+    repsExplanation: 'Het aantal keren dat je een oefening uitvoert binnen een set. Bijvoorbeeld, "8-12 reps" betekent dat je de beweging 8 tot 12 keer uitvoert voordat je rust.',
+    day1: 'Dag 1 - Push (Borst, Schouders, Triceps)',
+    day2: 'Dag 2 - Pull (Rug, Achterste Schouders, Biceps)',
+    day3: 'Dag 3 - Benen (Quadriceps, Hamstrings, Billen)',
+    day4: 'Dag 4 - Rust/Actief Herstel',
+    day5: 'Dag 5 - Push (Hoger Volume)',
+    day6: 'Dag 6 - Pull (Trap/Arm Focus)',
+    day7: 'Dag 7 - Benen (Hoger Volume)',
+    jumpDay1: 'Dag 1',
+    jumpPush1: 'Push',
+    jumpDay2: 'Dag 2',
+    jumpPull1: 'Pull',
+    jumpDay3: 'Dag 3',
+    jumpLegs1: 'Benen',
+    jumpDay4: 'Dag 4',
+    jumpRest: 'Rust',
+    jumpDay5: 'Dag 5',
+    jumpPush2: 'Push',
+    jumpDay6: 'Dag 6',
+    jumpPull2: 'Pull',
+    jumpDay7: 'Dag 7',
+    jumpLegs2: 'Benen',
+    footer: {
+      quote: '"Wetenschap ontmoet zweet - bereik je doelen!"',
+      copyright: '© 2024 Amin Shan Wetenschappelijk Onderbouwd Trainingsplan'
+    },
+    exercises: {
+      'Flat Barbell Bench Press': 'Vlakke Barbell Bankdrukken',
+      'Incline Dumbbell Press': 'Schuine Dumbbell Press',
+      'Seated Overhead Dumbbell Press': 'Zittende Overhead Dumbbell Press',
+      'Lateral Raises': 'Zijwaartse Heffingen',
+      'Cable Tricep Pushdowns': 'Kabel Tricep Pushdowns',
+      'Overhead Tricep Extensions': 'Overhead Tricep Extensies',
+      'Pull-Ups/Lat Pulldown': 'Pull-Ups/Lat Pulldown',
+      'Barbell Row': 'Barbell Roeien',
+      'Chest-Supported Dumbbell Row': 'Dumbbell Roeien met Steun',
+      'Face Pulls': 'Gezicht Trek',
+      'Barbell/Dumbbell Bicep Curls': 'Barbell/Dumbbell Bicep Curls',
+      'Hammer Curls': 'Hammer Curls',
+      'Back Squat': 'Achter Squat',
+      'Romanian Deadlift': 'Roemeense Deadlift',
+      'Walking Lunges': 'Wandelende Lunges',
+      'Leg Press': 'Beenpers',
+      'Hamstring Curls': 'Hamstring Curls',
+      'Calf Raises': 'Kuitheffingen',
+      'Incline Barbell Bench': 'Schuine Barbell Bankdrukken',
+      'Flat Dumbbell Press': 'Vlakke Dumbbell Druk',
+      'Arnold Press': 'Arnold Druk',
+      'Cable Lateral Raises': 'Kabel Zijwaartse Heffingen',
+      'Skull Crushers': 'Skull Crushers',
+      'Dips': 'Dips',
+      'Rack Pulls': 'Rack Pulls',
+      'Wide-Grip Pulldown': 'Brede Grip Pulldown',
+      'Single-Arm DB Row': 'Eén-Arms DB Roeien',
+      'Cable Rear Delt Fly': 'Kabel Achterste Delt Fly',
+      'Preacher Curls': 'Preacher Curls',
+      'Incline DB Curls': 'Schuine DB Curls',
+      'Front Squat': 'Front Squat',
+      'Bulgarian Split Squat': 'Bulgaars Split Squat',
+      'Deadlift': 'Deadlift',
+      'Hip Thrust': 'Heup Duw',
+      'Leg Extensions': 'Been Extensies',
+      'Standing Calf Raises': 'Staande Kuitheffingen'
+    },
+    notes: {
+      'Heavy, focus on form': 'Zwaar, focus op vorm',
+      'Control descent': 'Controleer daling',
+      'Weighted if possible': 'Gewicht indien mogelijk',
+      'Pendlay row variation': 'Pendlay roeivariatie',
+      'Focus on scapular retraction': 'Focus op scapulaire retractie',
+      'Strict form': 'Strikte vorm',
+      'Feel the hamstrings': 'Voel de hamstrings',
+      'Weight optional': 'Gewicht indien mogelijk',
+      'Control eccentric': 'Controleer excentrisch',
+      'Full range of motion': 'Volledig bewegingsbereik',
+      'Upper chest focus': 'Focus op bovenborst',
+      'Control tempo': 'Controleer tempo',
+      'Full rotation': 'Volledige rotatie',
+      'Constant tension': 'Constante spanning',
+      'Keep elbows still': 'Houd ellebogen stil',
+      'Add weight if possible': 'Voeg gewicht toe indien mogelijk',
+      'Focus on upper back': 'Focus op bovenrug',
+      'Full stretch at top': 'Volledige rek bovenaan',
+      'Feel the stretch': 'Voel de rek',
+      'Full glute squeeze': 'Volledige bilcompressie',
+      'Hold peak contraction': 'Houd piekcontractie vast'
+    }
+  }
+};
+function createWorkoutCard() {
+  const newCard = document.createElement('div');
+  newCard.className = 'workout-card';
+  newCard.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="editable-content" contenteditable="true">New Workout</h3>
+      <button class="delete-card-btn" onclick="deleteWorkoutCard(this)" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">Delete Card</button>
+    </div>
+    <table class="workout-table">
+      <thead>
+        <tr>
+          <th class="editable-content" contenteditable="true">Exercise</th>
+          <th class="editable-content" contenteditable="true">Sets</th>
+          <th class="editable-content" contenteditable="true">Reps</th>
+          <th class="editable-content" contenteditable="true">Rest</th>
+          <th class="editable-content" contenteditable="true">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <input type="text" class="editable" value="New Exercise">
+            <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#128249;</span>
+          </td>
+          <td><input type="text" class="editable" value="3"></td>
+          <td><input type="text" class="editable" value="8-12"></td>
+          <td><input type="text" class="editable" value="90 sec"></td>
+          <td><input type="text" class="editable" value="Form notes"></td>
+        </tr>
+      </tbody>
+      <tr class="add-exercise-row">
+        <td colspan="5" style="text-align: center; padding: 1rem;">
+          <button onclick="addExerciseRow(this)" 
+                  style="background: var(--primary); 
+                         color: var(--background); 
+                         padding: 0.5rem 1rem; 
+                         border-radius: 0.5rem; 
+                         border: none; 
+                         cursor: pointer; 
+                         font-weight: bold;">
+            + Add Exercise
+          </button>
+        </td>
+      </tr>
+    </table>
+  `;
+  document.querySelector('.schedule-grid').appendChild(newCard);
+}
+function createRestDayCard() {
+  const newCard = document.createElement('div');
+  newCard.className = 'workout-card';
+  newCard.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="editable-content" contenteditable="true">Rest/Active Recovery</h3>
+      <button class="delete-card-btn" onclick="deleteWorkoutCard(this)" style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">Delete Card</button>
+    </div>
+    <div class="info-card" style="margin-top: 1rem">
+      <h4>Suggested Activities:</h4>
+      <ul>
+        <li>Light stretching</li>
+        <li>Yoga</li>
+        <li>Mobility work</li>
+        <li>Light cardio (walking, swimming)</li>
+      </ul>
+      <p><em>Focus on recovery and flexibility</em></p>
+    </div>
+  `;
+  document.querySelector('.schedule-grid').appendChild(newCard);
+}
+function deleteWorkoutCard(button) {
+  if (confirm('Are you sure you want to delete this workout card?')) {
+    button.closest('.workout-card').remove();
+  }
+}
+document.getElementById('languageSelect').addEventListener('change', function (e) {
+  const selectedLang = e.target.value;
+  changeLanguage(selectedLang);
+  localStorage.setItem('preferred-language', selectedLang);
+});
+function changeLanguage(lang) {
+  document.querySelectorAll('[data-translate]').forEach(element => {
+    const key = element.getAttribute('data-translate');
+    const path = key.split('.');
+    let translation = translations[lang];
+    for (const segment of path) {
+      if (translation) {
+        translation = translation[segment];
+      }
+    }
+    if (translation) {
+      if (element.tagName === 'INPUT') {
+        element.value = translation;
+      } else if (element.hasAttribute('contenteditable')) {} else {
+        element.textContent = translation;
+      }
+    }
+  });
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('.workout-table tbody tr').forEach(row => {
+    const exerciseInput = row.querySelector('td:first-child input');
+    const notesInput = row.querySelector('td:last-child input');
+    if (exerciseInput && translations[lang].exercises) {
+      const originalExercise = exerciseInput.getAttribute('data-original');
+      if (originalExercise && translations[lang].exercises[originalExercise]) {
+        exerciseInput.value = translations[lang].exercises[originalExercise];
+      }
+    }
+    if (notesInput && translations[lang].notes) {
+      const originalNote = notesInput.getAttribute('data-original');
+      if (originalNote && translations[lang].notes[originalNote]) {
+        notesInput.value = translations[lang].notes[originalNote];
+      }
+    }
+  });
+}
+function resetWebsite() {
+  if (!confirm("Are you sure you want to reset everything to the original state? This cannot be undone.")) {
+    return;
+  }
+  window.location.reload();
+  window.onload = function () {
+    document.getElementById('languageSelect').value = 'en';
+    changeLanguage('en');
+    localStorage.setItem('preferred-language', 'en');
+    document.querySelectorAll('[contenteditable="true"]').forEach(element => {
+      const translateKey = element.getAttribute('data-translate');
+      if (translateKey && translations.en[translateKey]) {
+        element.textContent = translations.en[translateKey];
+      }
+    });
+    document.querySelectorAll('.workout-card').forEach(card => {
+      const cardTitle = card.querySelector('h3');
+      const titleKey = cardTitle.getAttribute('data-translate');
+      if (titleKey && translations.en[titleKey]) {
+        cardTitle.textContent = translations.en[titleKey];
+      }
+      card.querySelectorAll('.workout-table tbody tr').forEach(row => {
+        const exerciseInput = row.querySelector('td:first-child input');
+        const setsInput = row.querySelector('td:nth-child(2) input');
+        const repsInput = row.querySelector('td:nth-child(3) input');
+        const restInput = row.querySelector('td:nth-child(4) input');
+        const notesInput = row.querySelector('td:nth-child(5) input');
+        if (exerciseInput) {
+          const originalExercise = exerciseInput.getAttribute('data-original');
+          exerciseInput.value = originalExercise || exerciseInput.defaultValue;
+          exerciseInput.setAttribute('data-video-url', '');
+        }
+        if (setsInput) setsInput.value = setsInput.defaultValue;
+        if (repsInput) repsInput.value = repsInput.defaultValue;
+        if (restInput) restInput.value = restInput.defaultValue;
+        if (notesInput) {
+          const originalNote = notesInput.getAttribute('data-original');
+          notesInput.value = originalNote || notesInput.defaultValue;
+        }
+      });
+      const infoCard = card.querySelector('.info-card');
+      if (infoCard) {
+        const originalHtml = infoCard.getAttribute('data-original');
+        if (originalHtml) {
+          infoCard.innerHTML = originalHtml;
+        }
+      }
+    });
+    document.querySelectorAll('.jump-btn span').forEach(span => {
+      const translateKey = span.getAttribute('data-translate');
+      if (translateKey && translations.en[translateKey]) {
+        span.textContent = translations.en[translateKey];
+      }
+    });
+    const title = document.querySelector('h1.editable-content');
+    const subtitle = document.querySelector('h2.editable-content');
+    if (title) title.textContent = translations.en.title;
+    if (subtitle) subtitle.textContent = translations.en.subtitle;
+    const footerQuote = document.querySelector('.footer p:first-child');
+    const footerCopyright = document.querySelector('.footer p:last-child');
+    if (footerQuote) footerQuote.textContent = '"Science meets sweat – achieve your goals!"';
+    if (footerCopyright) footerCopyright.textContent = '© 2024 Amin Shan Science-Based Workout Plan';
+    localStorage.clear();
+    alert('Website has been reset to its original state!');
+  };
+}
+function showVideoModal(exerciseElement) {
+  const modal = document.createElement('div');
+  modal.className = 'video-modal';
+  modal.style.display = 'flex';
+  const videoUrl = exerciseElement.getAttribute('data-video-url') || '';
+  const exerciseName = exerciseElement.value || 'Exercise';
+  modal.innerHTML = `
+    <div class="video-modal-content">
+      <div class="video-modal-header">
+        <h3>${exerciseName}</h3>
+        <button class="close-modal">&#215;</button>
+      </div>
+      <div class="video-container" id="video-container">
+        ${videoUrl ? getEmbedCode(videoUrl) : '<p>No video added yet</p>'}
+      </div>
+      <input type="text" class="video-url-input" 
+        placeholder="Enter YouTube URL" 
+        value="${videoUrl}">
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector('.close-modal').onclick = () => {
+    document.body.removeChild(modal);
+  };
+  modal.onclick = e => {
+    if (e.target === modal) {
+      document.body.removeChild(modal);
+    }
+  };
+  const urlInput = modal.querySelector('.video-url-input');
+  urlInput.onchange = e => {
+    const newUrl = e.target.value;
+    exerciseElement.setAttribute('data-video-url', newUrl);
+    const container = modal.querySelector('#video-container');
+    container.innerHTML = newUrl ? getEmbedCode(newUrl) : '<p>No video added yet</p>';
+  };
+}
+function getEmbedCode(url) {
+  const videoId = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=))([\w\-]{10,12})\b/);
+  if (videoId) {
+    return `<iframe src="https://www.youtube.com/embed/${videoId[1]}" frameborder="0" allowfullscreen></iframe>`;
+  }
+  return '<p>Invalid YouTube URL</p>';
+}
+function saveWebsite() {
+  const workoutData = [];
+  document.querySelectorAll('.workout-card').forEach(card => {
+    const dayTitle = card.querySelector('h3').textContent;
+    const exercises = [];
+    const table = card.querySelector('.workout-table');
+    if (table) {
+      table.querySelectorAll('tbody tr:not(.add-exercise-row)').forEach(row => {
+        if (row.querySelector('td:nth-child(1) input')) {
+          const exerciseInput = row.querySelector('td:nth-child(1) input');
+          const videoUrl = exerciseInput.getAttribute('data-video-url');
+          exercises.push({
+            exercise: exerciseInput.value,
+            sets: row.querySelector('td:nth-child(2) input')?.value || '',
+            reps: row.querySelector('td:nth-child(3) input')?.value || '',
+            rest: row.querySelector('td:nth-child(4) input')?.value || '',
+            notes: row.querySelector('td:nth-child(5) input')?.value || '',
+            videoUrl: videoUrl || ''
+          });
+        }
+      });
+    }
+    workoutData.push({
+      day: dayTitle,
+      exercises: exercises,
+      infoCard: card.querySelector('.info-card')?.innerHTML || ''
+    });
+  });
+  const content = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Workout Plan</title>
+      <style>
+        :root {
+          --primary: #60a5fa;
+          --secondary: #94a3b8;
+          --background: #0f172a;
+          --text: #e2e8f0;
+          --card-bg: #1e293b;
+          --accent: #3b82f6;
+          --hover: #1e40af;
+        }
+
+        body {
+          font-family: 'Inter', system-ui, -apple-system, sans-serif;
+          background: var(--background);
+          color: var(--text);
+          line-height: 1.6;
+          padding: 40px;
+          margin: 0;
+        }
+
+        .container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        h1 {
+          color: var(--primary);
+          text-align: center;
+          font-size: 2.5rem;
+          margin-bottom: 1rem;
+        }
+
+        h2 {
+          color: var(--primary);
+          margin-top: 2rem;
+          font-size: 1.8rem;
+          border-bottom: 2px solid var(--hover);
+          padding-bottom: 0.5rem;
+        }
+
+        .overview {
+          background: var(--card-bg);
+          padding: 2rem;
+          border-radius: 1.5rem;
+          margin: 2rem 0;
+          box-shadow: 0 4px 20px -1px rgba(0,0,0,0.5);
+        }
+
+        table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+          margin: 1.5rem 0;
+          background: var(--card-bg);
+          border-radius: 0.75rem;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+          padding: 1rem;
+          text-align: left;
+          border-bottom: 1px solid var(--hover);
+        }
+
+        th {
+          background: var(--card-bg);
+          color: var(--primary);
+          font-weight: bold;
+        }
+
+        tr:hover {
+          background: rgba(96, 165, 250, 0.1);
+        }
+
+        .info-card {
+          background: var(--card-bg);
+          padding: 1.5rem;
+          border-radius: 0.75rem;
+          margin: 1rem 0;
+          border: 1px solid var(--hover);
+        }
+
+        .footer {
+          text-align: center;
+          margin-top: 4rem;
+          padding: 2rem;
+          border-top: 1px solid var(--hover);
+          color: var(--secondary);
+        }
+
+        .exercise-video-link {
+          margin-left: 8px;
+          color: var(--primary);
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        @media print {
+          body {
+            background: white;
+            color: black;
+          }
+          
+          .overview, table, .info-card {
+            break-inside: avoid;
+          }
+          
+          table {
+            page-break-inside: avoid;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <svg class="logo" style="width: 200px; height: 200px;" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- Dumbbell -->
+          <g transform="translate(100, 150)" fill="#60a5fa">
+            <rect x="0" y="40" width="200" height="20" rx="5"/>
+            <!-- Left weight -->
+            <rect x="-30" y="20" width="40" height="60" rx="5"/>
+            <rect x="-60" y="30" width="40" height="40" rx="5"/>
+            <!-- Right weight -->
+            <rect x="190" y="20" width="40" height="60" rx="5"/>
+            <rect x="220" y="30" width="40" height="40" rx="5"/>
+          </g>
+          
+          <!-- Text -->
+          <text x="200" y="280" text-anchor="middle" fill="#60a5fa" style="font-size: 24px; font-weight: bold;">
+            DON'T BE FAT FUCK
+          </text>
+          <text x="200" y="320" text-anchor="middle" fill="#60a5fa" style="font-size: 40px; font-weight: bold;">
+            BE FIT FUCK
+          </text>
+        </svg>
+
+        <h1>${document.querySelector('.cover h1')?.textContent || 'Workout Plan'}</h1>
+        <p style="text-align: center; font-size: 1.2rem; color: var(--secondary);">
+          ${document.querySelector('.cover h2')?.textContent || ''}
+        </p>
+
+        <!-- Add Weekly Overview section -->
+        <div class="overview">
+          <h2>Weekly Overview</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            <div class="info-card">
+              <h3>Frequency</h3>
+              <p>5–6 days per week</p>
+            </div>
+            <div class="info-card">
+              <h3>Split</h3>
+              <p>Push/Pull/Legs (PPL) with variations for volume and intensity</p>
+            </div>
+            <div class="info-card">
+              <h3>Rest Days</h3>
+              <p>1–2 (adjust based on recovery)</p>
+            </div>
+          </div>
+        </div>
+
+        ${workoutData.map(day => `
+          <h2>${day.day}</h2>
+          ${day.exercises.length > 0 ? `
+            <table>
+              <thead>
+                <tr>
+                  <th>Exercise</th>
+                  <th>Sets</th>
+                  <th>Reps</th>
+                  <th>Rest</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${day.exercises.map(exercise => `
+                  <tr>
+                    <td>
+                      ${exercise.exercise}
+                      ${exercise.videoUrl ? `
+                        <a href="${exercise.videoUrl}" target="_blank" class="exercise-video-link">&#128249;</a>
+                      ` : ''}
+                    </td>
+                    <td>${exercise.sets}</td>
+                    <td>${exercise.reps}</td>
+                    <td>${exercise.rest}</td>
+                    <td>${exercise.notes}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : `
+            <div class="info-card">
+              ${day.infoCard}
+            </div>
+          `}
+        `).join('')}
+
+        <div class="footer">
+          <p>${document.querySelector('.footer p:first-child')?.textContent || ''}</p>
+          <p>${document.querySelector('.footer p:last-child')?.textContent || ''}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+  const blob = new Blob([content], {
+    type: 'text/html'
+  });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'workout-plan.html';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }, 0);
+  alert('Your workout plan has been saved and downloaded! You can open the HTML file in any web browser to view, print, or save as PDF.');
+}
+function addExerciseRow(button) {
+  const tbody = button.closest('.workout-table').querySelector('tbody');
+  const newRow = document.createElement('tr');
+  newRow.innerHTML = `
+    <td>
+      <input type="text" class="editable" value="New Exercise">
+      <span class="exercise-link" onclick="showVideoModal(this.previousElementSibling)">&#128249;</span>
+    </td>
+    <td><input type="text" class="editable" value="3"></td>
+    <td><input type="text" class="editable" value="8-12"></td>
+    <td><input type="text" class="editable" value="90 sec"></td>
+    <td><input type="text" class="editable" value="Form notes"></td>
+  `;
+  tbody.appendChild(newRow);
+}</script>
+
+<footer class="footer">
+  <p class="editable-content" contenteditable="true">&quot;Science meets sweat &#x2013; achieve your goals!&quot;</p>
+  <p class="editable-content" contenteditable="true">&#xa9; 2024 Amin Shan Science-Based Workout Plan</p>
+</footer>
+
+</body></html>
